@@ -113,26 +113,26 @@
             const dailyExpense = parseFloat(document.getElementById("daily-expense").innerText) || 0;
             document.getElementById("daily-surplus").textContent = dailyIncome - dailyExpense;
             document.getElementById("daily-yearly").textContent = "₹ " + (dailyIncome - dailyExpense) * 365;
-            document.getElementById("daily-compounded").textContent = "₹ " + compound((dailyIncome - dailyExpense) * 365).toFixed(2);
+            document.getElementById("daily-compounded").textContent = "₹ " + compound((dailyIncome - dailyExpense),365 ).toFixed(2);
 
             // Repeat similar calculations for Weekly, Monthly, Yearly, and Total
             const weeklyIncome = parseFloat(document.getElementById("weekly-income").innerText) || 0;
             const weeklyExpense = parseFloat(document.getElementById("weekly-expense").innerText) || 0;
             document.getElementById("weekly-surplus").textContent = weeklyIncome - weeklyExpense;
             document.getElementById("weekly-yearly").textContent = "₹ " + (weeklyIncome - weeklyExpense) * 52;
-            document.getElementById("weekly-compounded").textContent = "₹ " + compound((weeklyIncome - weeklyExpense) * 52).toFixed(2);
+            document.getElementById("weekly-compounded").textContent = "₹ " + compound((weeklyIncome - weeklyExpense),52).toFixed(2);
 
             const monthlyIncome = parseFloat(document.getElementById("monthly-income").innerText) || 0;
             const monthlyExpense = parseFloat(document.getElementById("monthly-expense").innerText) || 0;
             document.getElementById("monthly-surplus").textContent = monthlyIncome - monthlyExpense;
             document.getElementById("monthly-yearly").textContent = "₹ " + (monthlyIncome - monthlyExpense) * 12;
-            document.getElementById("monthly-compounded").textContent = "₹ " + compound((monthlyIncome - monthlyExpense) * 12).toFixed(2);
+            document.getElementById("monthly-compounded").textContent = "₹ " + compound((monthlyIncome - monthlyExpense),12 ).toFixed(2);
 
             const yearlyIncome = parseFloat(document.getElementById("yearly-income").innerText) || 0;
             const yearlyExpense = parseFloat(document.getElementById("yearly-expense").innerText) || 0;
             document.getElementById("yearly-surplus").textContent = yearlyIncome - yearlyExpense;
             document.getElementById("yearly-yearly").textContent = "₹ " + (yearlyIncome - yearlyExpense);
-            document.getElementById("yearly-compounded").textContent = "₹ " + compound((yearlyIncome - yearlyExpense)).toFixed(2);
+            document.getElementById("yearly-compounded").textContent = "₹ " + compound((yearlyIncome - yearlyExpense),1).toFixed(2);
 
             // Calculate and update Total row
             const totalYearly = (dailyIncome - dailyExpense) * 365 + (weeklyIncome - weeklyExpense) * 52 +
@@ -141,14 +141,14 @@
             document.getElementById("total-yearly").textContent = "₹ " + totalYearly;
             
             // Calculate and update Total Compounded row
-            const totalCompounded = compound((dailyIncome - dailyExpense) * 365) +
-                compound((weeklyIncome - weeklyExpense) * 52) + compound((monthlyIncome - monthlyExpense) * 12) +
-                compound((yearlyIncome - yearlyExpense));
+            const totalCompounded = compound((dailyIncome - dailyExpense) , 365) +
+                compound((weeklyIncome - weeklyExpense) , 52) + compound((monthlyIncome - monthlyExpense) , 12) +
+                compound((yearlyIncome - yearlyExpense),1);
             document.getElementById("total-compounded").textContent = "₹ " + totalCompounded.toFixed(2);
         }
 
-        function compound(principal) {
-            return (principal * 0.12) + principal;
+        function compound(principal,time) {
+            return principal*(Math.pow((1+0.000328767),(1*time))-1)/(0.000328767);
         }
     </script>
 
