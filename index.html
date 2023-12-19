@@ -5,12 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financials</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
             background-color: #f5f5f5;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
@@ -47,13 +51,100 @@
             font-weight: bold;
             color: #28a745;
         }
+
+        #inputForm {
+            max-width: 600px;
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two columns */
+            gap: 20px;
+        }
+
+        #inputForm div {
+            margin-bottom: 20px;
+        }
+
+        #inputForm label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #007BFF;
+        }
+
+        #inputForm input {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #inputForm button {
+            grid-column: span 2;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #inputForm button:hover {
+            background-color: #0056b3;
+        }
     </style>
-
 </head>
-
 <body>
 
     <h1>Financials </h1>
+
+    <div id="inputForm">
+        <div>
+            <label for="dailyIncome">Daily Income:</label>
+            <input type="number" id="dailyIncome" />
+        </div>
+
+        <div>
+            <label for="dailyExpense">Daily Expense:</label>
+            <input type="number" id="dailyExpense" />
+        </div>
+
+        <div>
+            <label for="weeklyIncome">Weekly Income:</label>
+            <input type="number" id="weeklyIncome" />
+        </div>
+
+        <div>
+            <label for="weeklyExpense">Weekly Expense:</label>
+            <input type="number" id="weeklyExpense" />
+        </div>
+
+        <div>
+            <label for="monthlyIncome">Monthly Income:</label>
+            <input type="number" id="monthlyIncome" />
+        </div>
+
+        <div>
+            <label for="monthlyExpense">Monthly Expense:</label>
+            <input type="number" id="monthlyExpense" />
+        </div>
+
+        <div>
+            <label for="yearlyIncome">Yearly Income:</label>
+            <input type="number" id="yearlyIncome" />
+        </div>
+
+        <div>
+            <label for="yearlyExpense">Yearly Expense:</label>
+            <input type="number" id="yearlyExpense" />
+        </div>
+
+        <button onclick="calculate()">Calculate</button>
+        <button onclick="downloadAsExcel()">Download as Excel File</button>
+    </div>
+
+    <!-- Rest of your HTML -->
+
+
 
     <table border="1">
         <tr>
@@ -66,36 +157,37 @@
         </tr>
         <tr>
             <td>Daily</td>
-            <td contenteditable="true" id="daily-income" oninput="calculate()"></td>
-            <td contenteditable="true" id="daily-expense" oninput="calculate()"></td>
+            <td contenteditable="true" id="daily-income"></td>
+            <td contenteditable="true" id="daily-expense"></td>
             <td id="daily-surplus">0</td>
             <td id="daily-yearly">₹ 0</td>
             <td id="daily-compounded">₹ 0.00</td>
         </tr>
+        <!-- Repeat similar rows for Weekly, Monthly, Yearly, and Total -->
         <tr>
-            <td>Weekly</td>
-            <td contenteditable="true" id="weekly-income" oninput="calculate()"></td>
-            <td contenteditable="true" id="weekly-expense" oninput="calculate()"></td>
-            <td id="weekly-surplus">0</td>
-            <td id="weekly-yearly">₹ 0</td>
-            <td id="weekly-compounded">₹ 0.00</td>
-        </tr>
-        <tr>
-            <td>Monthly</td>
-            <td contenteditable="true" id="monthly-income" oninput="calculate()"></td>
-            <td contenteditable="true" id="monthly-expense" oninput="calculate()"></td>
-            <td id="monthly-surplus">0</td>
-            <td id="monthly-yearly">₹ 0</td>
-            <td id="monthly-compounded">₹ 0.00</td>
-        </tr>
-        <tr>
-            <td>Yearly</td>
-            <td contenteditable="true" id="yearly-income" oninput="calculate()"></td>
-            <td contenteditable="true" id="yearly-expense" oninput="calculate()"></td>
-            <td id="yearly-surplus">0</td>
-            <td id="yearly-yearly">₹ 0</td>
-            <td id="yearly-compounded">₹ 0.00</td>
-        </tr>
+          <td>Weekly</td>
+          <td contenteditable="true" id="weekly-income"></td>
+          <td contenteditable="true" id="weekly-expense"></td>
+          <td id="weekly-surplus">0</td>
+          <td id="weekly-yearly">₹ 0</td>
+          <td id="weekly-compounded">₹ 0.00</td>
+      </tr>
+      <tr>
+        <td>Monthly</td>
+        <td contenteditable="true" id="monthly-income"></td>
+        <td contenteditable="true" id="monthly-expense"></td>
+        <td id="monthly-surplus">0</td>
+        <td id="monthly-yearly">₹ 0</td>
+        <td id="monthly-compounded">₹ 0.00</td>
+    </tr>
+    <tr>
+      <td>Yearly</td>
+      <td contenteditable="true" id="yearly-income"></td>
+      <td contenteditable="true" id="yearly-expense"></td>
+      <td id="yearly-surplus">0</td>
+      <td id="yearly-yearly">₹ 0</td>
+      <td id="yearly-compounded">₹ 0.00</td>
+  </tr>
         <tr>
             <td>Total</td>
             <td id="total-income"></td>
@@ -107,48 +199,73 @@
     </table>
 
     <script>
+        function downloadAsExcel() {
+        // Get the table data
+        const table = document.querySelector('table');
+        const ws = XLSX.utils.table_to_sheet(table);
+
+        // Create a workbook with a single sheet
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Financials');
+
+        // Save the workbook as an Excel file
+        const fileName = 'financials.xlsx';
+        XLSX.writeFile(wb, fileName);
+    }
         function calculate() {
-            // Calculate and update table cells for Daily
-            const dailyIncome = parseFloat(document.getElementById("daily-income").innerText) || 0;
-            const dailyExpense = parseFloat(document.getElementById("daily-expense").innerText) || 0;
+            const dailyIncome = parseFloat(document.getElementById("dailyIncome").value) || 0;
+            const dailyExpense = parseFloat(document.getElementById("dailyExpense").value) || 0;
+
+            const weeklyIncome = parseFloat(document.getElementById("weeklyIncome").value) || 0;
+            const weeklyExpense = parseFloat(document.getElementById("weeklyExpense").value) || 0;
+
+            const monthlyIncome = parseFloat(document.getElementById("monthlyIncome").value) || 0;
+            const monthlyExpense = parseFloat(document.getElementById("monthlyExpense").value) || 0;
+
+            const yearlyIncome = parseFloat(document.getElementById("yearlyIncome").value) || 0;
+            const yearlyExpense = parseFloat(document.getElementById("yearlyExpense").value) || 0;
+
+            document.getElementById("daily-income").innerText = dailyIncome;
+            document.getElementById("daily-expense").innerText = dailyExpense;
             document.getElementById("daily-surplus").textContent = dailyIncome - dailyExpense;
             document.getElementById("daily-yearly").textContent = "₹ " + (dailyIncome - dailyExpense) * 365;
-            document.getElementById("daily-compounded").textContent = "₹ " + compound((dailyIncome - dailyExpense),365 ).toFixed(2);
+            document.getElementById("daily-compounded").textContent = "₹ " + compound((dailyIncome - dailyExpense), 365).toFixed(2);
 
             // Repeat similar calculations for Weekly, Monthly, Yearly, and Total
-            const weeklyIncome = parseFloat(document.getElementById("weekly-income").innerText) || 0;
-            const weeklyExpense = parseFloat(document.getElementById("weekly-expense").innerText) || 0;
+            // ...document.getElementById("daily-income").innerText = dailyIncome;
+            document.getElementById("weekly-income").innerText = weeklyIncome;
+            document.getElementById("weekly-expense").innerText = weeklyExpense;
             document.getElementById("weekly-surplus").textContent = weeklyIncome - weeklyExpense;
-            document.getElementById("weekly-yearly").textContent = "₹ " + (weeklyIncome - weeklyExpense) * 52;
-            document.getElementById("weekly-compounded").textContent = "₹ " + compound((weeklyIncome - weeklyExpense),52).toFixed(2);
+            document.getElementById("weekly-yearly").textContent = "₹ " + (weeklyIncome - weeklyExpense) * 365;
+            document.getElementById("weekly-compounded").textContent = "₹ " + compound((weeklyIncome - weeklyExpense), 52).toFixed(2);
 
-            const monthlyIncome = parseFloat(document.getElementById("monthly-income").innerText) || 0;
-            const monthlyExpense = parseFloat(document.getElementById("monthly-expense").innerText) || 0;
+            document.getElementById("monthly-income").innerText = monthlyIncome;
+            document.getElementById("monthly-expense").innerText = monthlyExpense;
             document.getElementById("monthly-surplus").textContent = monthlyIncome - monthlyExpense;
-            document.getElementById("monthly-yearly").textContent = "₹ " + (monthlyIncome - monthlyExpense) * 12;
-            document.getElementById("monthly-compounded").textContent = "₹ " + compound((monthlyIncome - monthlyExpense),12 ).toFixed(2);
+            document.getElementById("monthly-yearly").textContent = "₹ " + (monthlyIncome - monthlyExpense) * 365;
+            document.getElementById("monthly-compounded").textContent = "₹ " + compound((monthlyIncome - monthlyExpense), 12).toFixed(2);
 
-            const yearlyIncome = parseFloat(document.getElementById("yearly-income").innerText) || 0;
-            const yearlyExpense = parseFloat(document.getElementById("yearly-expense").innerText) || 0;
+            document.getElementById("yearly-income").innerText = yearlyIncome;
+            document.getElementById("yearly-expense").innerText = yearlyExpense;
             document.getElementById("yearly-surplus").textContent = yearlyIncome - yearlyExpense;
-            document.getElementById("yearly-yearly").textContent = "₹ " + (yearlyIncome - yearlyExpense);
-            document.getElementById("yearly-compounded").textContent = "₹ " + compound((yearlyIncome - yearlyExpense),1).toFixed(2);
+            document.getElementById("yearly-yearly").textContent = "₹ " + (yearlyIncome - yearlyExpense) * 365;
+            document.getElementById("yearly-compounded").textContent = "₹ " + compound((yearlyIncome - yearlyExpense), 12).toFixed(2);
 
-            // Calculate and update Total row
+
             const totalYearly = (dailyIncome - dailyExpense) * 365 + (weeklyIncome - weeklyExpense) * 52 +
                 (monthlyIncome - monthlyExpense) * 12 + (yearlyIncome - yearlyExpense);
             
             document.getElementById("total-yearly").textContent = "₹ " + totalYearly;
-            
-            // Calculate and update Total Compounded row
             const totalCompounded = compound((dailyIncome - dailyExpense) , 365) +
                 compound((weeklyIncome - weeklyExpense) , 52) + compound((monthlyIncome - monthlyExpense) , 12) +
                 compound((yearlyIncome - yearlyExpense),1);
             document.getElementById("total-compounded").textContent = "₹ " + totalCompounded.toFixed(2);
+
+            
         }
 
-        function compound(principal,time) {
-            return principal*(Math.pow((1+0.000328767),(1*time))-1)/(0.000328767);
+        function compound(principal, time) {
+            return principal * (Math.pow((1 + 0.000328767), (1 * time)) - 1) / (0.000328767);
         }
     </script>
 
